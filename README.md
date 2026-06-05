@@ -43,17 +43,26 @@ Backs the DE resume's *dbt Warehouse + SCD2 + CI/CD* project line. Concretely:
   + a YAML data contract (schema, freshness SLA, row-count baseline, consumer list), all blocking in CI.
 - **Lineage + docs** — `dbt docs` DAG deployed to GitHub Pages.
 
-## Metrics (TARGET until a real `dbt build` measures them — Step 8)
+## Metrics (measured by `dbt build`, 2026-06-05)
 
-| Metric | Target | Measured |
-|---|---|---|
-| Models (staging + intermediate + marts) | — | TARGET |
-| Data tests (generic + singular + expectations) | — | TARGET |
-| Test pass rate | 100% | TARGET |
-| % mart columns with ≥1 test | ≥ 70% | TARGET |
-| Rows modeled (`fct_transactions`) | ~40k | TARGET |
-| SCD2 rows versioned / closed-out | — | TARGET |
-| `dbt build` wall-clock (CI runner) | — | TARGET |
+| Metric | Value |
+|---|---|
+| Models (3 staging + 5 marts) | **8** |
+| Data tests (generic + singular + `dbt_expectations`) | **45**, **100% pass** |
+| Mart columns with a column-level test | **12 / 17 (71%)** — plus the entire fact under an **enforced** schema contract |
+| Rows modeled (`fct_transactions`) | **40,000** over 24 months · 8 accounts · 40 merchants |
+| SCD2 versions / closed-out (v1→v2 reload) | **46 / 6** |
+| `dbt build` wall-clock | **~3 s** local (Apple silicon); full CI job ~3 min incl. install |
+| Sources / snapshots / exposures | 3 / 1 / 1 |
+
+**Live lineage docs (GitHub Pages):** <https://harshpatel7x.github.io/finance-warehouse-dbt/>
+
+### Headline finding — a green test suite ≠ trustworthy data
+Injecting one structurally-perfect but business-invalid row (a *payroll* transaction with a **positive**
+amount) passed **all 12** generic + expectation tests on the fact — `unique`, `not_null`, every
+`relationships` FK, the value-range and row-count checks. Only a **singular** test
+(`assert_inflow_categories_are_negative`) caught it. Generic tests check *shape*; only singular tests encode
+*business meaning*. (Demonstrated in [`notes/step-06`](notes/step-06-data-quality.md).)
 
 ## Quickstart
 
@@ -61,9 +70,14 @@ Backs the DE resume's *dbt Warehouse + SCD2 + CI/CD* project line. Concretely:
 python3.12 -m venv venv && source venv/bin/activate   # Python 3.12 (NOT 3.14 — dbt #12098)
 pip install -r requirements.txt
 dbt deps --profiles-dir .
-python scripts/generate_and_load.py                   # build the raw layer (Step 2+)
-dbt build --profiles-dir .                            # run + test the whole warehouse
-dbt docs generate --profiles-dir . && dbt docs serve  # explore the lineage graph
+
+python scripts/generate_and_load.py                   # land the raw corpus (v1)
+dbt snapshot --profiles-dir .                          # SCD2 baseline
+python scripts/generate_and_load.py --scenario v2      # mutate some merchants
+dbt build --profiles-dir .                            # snapshot history + run + test everything
+
+python scripts/report.py                              # the downstream consumer → reports/
+dbt docs generate --static --profiles-dir . && dbt docs serve  # explore the lineage graph
 ```
 
 ## Stack (pinned, verified on Python 3.12.2)
@@ -74,8 +88,24 @@ dbt docs generate --profiles-dir . && dbt docs serve  # explore the lineage grap
 
 ## Honest limitations
 
-- *(filled at Step 8)* — static-seed freshness caveat, single-writer DuckDB, and the cloud
-  (Airflow/MWAA + S3/Snowflake) **promotion path** that is documented but not run here.
+- **Freshness is trivially fresh on a static seed.** The freshness check is *real* (it compares `now()` to
+  the newest `_loaded_at` and would fail past a 72h SLA), but the loader is one-shot, so it never actually
+  goes stale. It is wired correctly, not monitoring a live feed.
+- **DuckDB is single-writer, dev-grade.** Perfect for a local + CI warehouse with a clean `dbt build`; not a
+  concurrent multi-writer production warehouse. The dbt models are engine-portable.
+- **The cloud path is documented, not run.** Orchestration (Airflow / **AWS MWAA**) and a cloud warehouse
+  (Snowflake) are the production **promotion path**, not provisioned here — the same "local is the faithful,
+  $0-reproducible stand-in" choice as the sibling lakehouse repo. dbt + the models move unchanged; only the
+  `profiles.yml` target and a scheduler are added.
+- **`dbt_expectations`, not Great Expectations.** Same expectation-style tests, in-stack, no extra runtime.
+
+## Résumé claim — honest framing
+
+This repo backs the DE résumé line *"dbt Warehouse + SCD2 + CI/CD."* What is **built and run here**: the
+dbt-core + DuckDB star schema, **exercised** SCD2 history, enforced contracts + `dbt_expectations` +
+singular tests gating CI, lineage docs on Pages. What is **designed, not run**: AWS MWAA orchestration and a
+Snowflake target (the promotion path above). The résumé wording is kept consistent with that split — no
+"deployed on MWAA" claim, because it isn't.
 
 ## Build notes
 
