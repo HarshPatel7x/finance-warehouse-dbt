@@ -25,11 +25,17 @@ jobs:
       - name: Install dbt packages
         run: dbt deps --profiles-dir .
 
-      - name: Load the raw corpus (deterministic, seed=42)
+      - name: Load the raw corpus — v1 (deterministic, seed=42)
         run: python scripts/generate_and_load.py
 
       - name: Source freshness (real check on _loaded_at)
         run: dbt source freshness --profiles-dir .
 
-      - name: dbt build (run + test every model — the PR gate)
+      - name: SCD2 baseline snapshot (v1 — all merchants current)
+        run: dbt snapshot --profiles-dir .
+
+      - name: Reload v2 (mutate a fixed set of merchants)
+        run: python scripts/generate_and_load.py --scenario v2
+
+      - name: dbt build (v2 snapshot closes/opens history + models + all tests)
         run: dbt build --profiles-dir .
