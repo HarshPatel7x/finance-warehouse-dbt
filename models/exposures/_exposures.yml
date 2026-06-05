@@ -1,0 +1,20 @@
+version: 2
+
+exposures:
+  - name: monthly_spend_report
+    label: "Monthly Account-Spend Report"
+    type: analysis
+    maturity: high
+    # The real downstream consumer: scripts/report.py reads the mart and writes
+    # reports/monthly_spend_summary.md. Lineage ends in a use, not a stub.
+    url: https://github.com/HarshPatel7x/finance-warehouse-dbt/blob/main/reports/monthly_spend_summary.md
+    description: >
+      Monthly spend-by-account + top-category summary. Consumes the BI mart; this is the
+      "consumer" named in the mart's data contract. Breaks if the mart's grain or columns change.
+    depends_on:
+      - ref('mart_monthly_account_spend')
+      - ref('dim_account')
+      - ref('dim_merchant')
+    owner:
+      name: Harsh Patel
+      email: harshpatel0263@gmail.com

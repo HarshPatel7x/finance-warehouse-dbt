@@ -18,8 +18,9 @@ built, the concepts, the bugs, the decisions. New to a term? Start with the glos
 | 4 | [step-04-marts.md](./step-04-marts.md) | **Star schema** — `dim_account/merchant/date` + `fct_transactions` (grain test) + `mart_monthly_account_spend`; surrogate keys, FK + grain tests |
 | 5 | [step-05-scd2-snapshot.md](./step-05-scd2-snapshot.md) | **SCD2** snapshot on merchants, **exercised** v1→v2 (6 closed-out versions, measured); invariant singular test; CI runs the full exercise |
 | 6 | [step-06-data-quality.md](./step-06-data-quality.md) | Enforced **contract** + `dbt_expectations` + **singular** business-rule tests + YAML data contract; **demo: 12 generic green, 1 singular catches a bad row** |
+| 7 | [step-07-exposure-docs-pages.md](./step-07-exposure-docs-pages.md) | **Exposure** → a real report consumer; `dbt docs --static` **lineage site on GitHub Pages** (zero-secret deploy) |
 
-*(steps 7–8 added as they ship)*
+*(step 8 added as it ships)*
 
 ## Key findings (worth remembering)
 - **A green generic test suite ≠ trustworthy data.** A structurally-perfect but business-invalid row
