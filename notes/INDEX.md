@@ -16,8 +16,9 @@ built, the concepts, the bugs, the decisions. New to a term? Start with the glos
 | 2 | [step-02-generator-raw-load.md](./step-02-generator-raw-load.md) | Deterministic generator (40k tx / 24mo / 8 acct / 40 merchants, time-varying), `raw` load, dbt **source** + **freshness** |
 | 3 | [step-03-staging.md](./step-03-staging.md) | Staging views (`stg_transactions/accounts/merchants`) + generic tests (unique, not_null, accepted_values, **relationships/FK**); CI → `dbt build` |
 | 4 | [step-04-marts.md](./step-04-marts.md) | **Star schema** — `dim_account/merchant/date` + `fct_transactions` (grain test) + `mart_monthly_account_spend`; surrogate keys, FK + grain tests |
+| 5 | [step-05-scd2-snapshot.md](./step-05-scd2-snapshot.md) | **SCD2** snapshot on merchants, **exercised** v1→v2 (6 closed-out versions, measured); invariant singular test; CI runs the full exercise |
 
-*(steps 5–8 added as they ship)*
+*(steps 6–8 added as they ship)*
 
 ## Key findings (worth remembering)
 *(populated as the build surfaces them — candidates: "a green test suite doesn't mean trustworthy data";
