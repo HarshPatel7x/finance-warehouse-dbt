@@ -20,11 +20,12 @@ built, the concepts, the bugs, the decisions. New to a term? Start with the glos
 | 6 | [step-06-data-quality.md](./step-06-data-quality.md) | Enforced **contract** + `dbt_expectations` + **singular** business-rule tests + YAML data contract; **demo: 12 generic green, 1 singular catches a bad row** |
 | 7 | [step-07-exposure-docs-pages.md](./step-07-exposure-docs-pages.md) | **Exposure** → a real report consumer; `dbt docs --static` **lineage site on GitHub Pages** (zero-secret deploy) |
 | 8 | [step-08-finalize.md](./step-08-finalize.md) | README **measured metrics**, live-docs verified, honest-limitations + résumé-claim framing |
+| 9 | [step-09-review-fixes.md](./step-09-review-fixes.md) | 4-agent adversarial review (correctness/honesty/recruiter/**clean-clone repro**); honesty count fix, stronger SCD2 invariant, dead-config + package cleanups |
 
 ## Key findings (worth remembering)
 - **A green generic test suite ≠ trustworthy data.** A structurally-perfect but business-invalid row
-  (positive-amount payroll) passed all 12 generic/expectation tests on the fact; only a **singular** test
-  caught it (Step 6, demonstrated).
+  (positive-amount payroll) passed all 11 generic/expectation tests on the fact (and a second singular
+  test); only the **singular** `assert_inflow_categories_are_negative` caught it (Step 6, demonstrated).
 - **SCD2 history is only as good as your change-detection grain** — the `check_cols` list. 6 mutated
   merchants → exactly 6 closed-out versions; widening `check_cols` to a noisy column would spuriously
   version everything (Step 5).

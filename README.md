@@ -48,7 +48,7 @@ Backs the DE resume's *dbt Warehouse + SCD2 + CI/CD* project line. Concretely:
 | Metric | Value |
 |---|---|
 | Models (3 staging + 5 marts) | **8** |
-| Data tests (generic + singular + `dbt_expectations`) | **45**, **100% pass** |
+| Data tests (generic + singular + `dbt_expectations`) | **44**, **100% pass** |
 | Mart columns with a column-level test | **12 / 17 (71%)** — plus the entire fact under an **enforced** schema contract |
 | Rows modeled (`fct_transactions`) | **40,000** over 24 months · 8 accounts · 40 merchants |
 | SCD2 versions / closed-out (v1→v2 reload) | **46 / 6** |
@@ -58,11 +58,11 @@ Backs the DE resume's *dbt Warehouse + SCD2 + CI/CD* project line. Concretely:
 **Live lineage docs (GitHub Pages):** <https://harshpatel7x.github.io/finance-warehouse-dbt/>
 
 ### Headline finding — a green test suite ≠ trustworthy data
-Injecting one structurally-perfect but business-invalid row (a *payroll* transaction with a **positive**
-amount) passed **all 12** generic + expectation tests on the fact — `unique`, `not_null`, every
-`relationships` FK, the value-range and row-count checks. Only a **singular** test
-(`assert_inflow_categories_are_negative`) caught it. Generic tests check *shape*; only singular tests encode
-*business meaning*. (Demonstrated in [`notes/step-06`](notes/step-06-data-quality.md).)
+I injected one structurally-perfect but business-invalid row (a *payroll* transaction with a **positive**
+amount). Of the 13 tests on the fact, **12 passed** — all **11** generic + expectation checks (`unique`,
+`not_null`, every `relationships` FK, the value-range and row-count checks) *and* the other singular test —
+and only `assert_inflow_categories_are_negative` caught it. Generic tests check *shape*; only singular tests
+encode *business meaning*. (Demonstrated in [`notes/step-06`](notes/step-06-data-quality.md).)
 
 ## Quickstart
 
@@ -77,7 +77,8 @@ python scripts/generate_and_load.py --scenario v2      # mutate some merchants
 dbt build --profiles-dir .                            # snapshot history + run + test everything
 
 python scripts/report.py                              # the downstream consumer → reports/
-dbt docs generate --static --profiles-dir . && dbt docs serve  # explore the lineage graph
+dbt docs generate --static --profiles-dir .           # then open target/static_index.html
+# (or `dbt docs serve` for the interactive site — it runs a blocking server; Ctrl-C to stop)
 ```
 
 ## Stack (pinned, verified on Python 3.12.2)

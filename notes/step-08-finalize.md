@@ -10,7 +10,7 @@ reproduces green.
 
 ## What we built
 
-- **README metrics table — measured, not TARGET.** 8 models · 45 tests (100% pass) · 40,000 fct rows ·
+- **README metrics table — measured, not TARGET.** 8 models · 44 tests (100% pass) · 40,000 fct rows ·
   SCD2 46 versions / 6 closed · ~3 s local build · 12/17 mart columns column-tested + the fact under an
   enforced contract.
 - **Live docs verified.** Curled `https://harshpatel7x.github.io/finance-warehouse-dbt/` → HTTP 200,

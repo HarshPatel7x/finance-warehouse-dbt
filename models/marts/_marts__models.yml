@@ -49,8 +49,8 @@ models:
         description: "Surrogate key — enforces the grain."
         data_type: varchar
         constraints:
-          - type: not_null
-        data_tests: [unique, not_null]
+          - type: not_null          # contract-enforced; no redundant not_null data_test
+        data_tests: [unique]
       - name: transaction_id
         data_type: varchar
       - name: account_key
