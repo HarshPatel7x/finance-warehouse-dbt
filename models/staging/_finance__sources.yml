@@ -1,0 +1,34 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: >
+      Raw finance corpus loaded by `scripts/generate_and_load.py` (seed=42:
+      ~40k transactions over 24 months, 8 accounts, 40 merchants). Expanded from
+      the shared finance-pipeline corpus so SCD2 / freshness have real movement.
+    tables:
+      - name: transactions
+        description: "One row per transaction (the fact source). Stamped `_loaded_at` at load."
+        # Freshness is measured against the load timestamp. On a one-shot static seed
+        # this is trivially fresh (the loader just ran) — the value is that the check
+        # is REAL and would catch staleness the moment a scheduled loader fell behind.
+        loaded_at_field: _loaded_at
+        freshness:
+          warn_after: {count: 24, period: hour}
+          error_after: {count: 72, period: hour}
+        columns:
+          - name: transaction_id
+            description: "Natural key of a transaction."
+          - name: amount
+            description: "Signed USD. Negative = money in (payroll, card payment)."
+      - name: accounts
+        description: "One row per account."
+      - name: merchants
+        description: >
+          One row per merchant — the dimension the SCD2 snapshot tracks. Scenario v2
+          mutates a fixed set of these (rebrands, reclassifications) to exercise history.
+        loaded_at_field: _loaded_at
+        freshness:
+          warn_after: {count: 24, period: hour}
+          error_after: {count: 72, period: hour}
