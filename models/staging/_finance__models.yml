@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: stg_transactions
+    description: "One cleaned row per transaction. Grain: one transaction."
+    columns:
+      - name: transaction_id
+        description: "Natural key of a transaction."
+        data_tests: [unique, not_null]
+      - name: account_id
+        description: "FK to stg_accounts."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_accounts')
+              field: account_id
+      - name: merchant_id
+        description: "FK to stg_merchants."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_merchants')
+              field: merchant_id
+      - name: amount
+        description: "Signed USD; negative = money in."
+        data_tests: [not_null]
+      - name: is_inflow
+        data_tests: [not_null]
+
+  - name: stg_accounts
+    description: "One cleaned row per account."
+    columns:
+      - name: account_id
+        data_tests: [unique, not_null]
+      - name: account_type
+        data_tests:
+          - accepted_values:
+              values: ['checking', 'savings', 'credit', 'investment']
+
+  - name: stg_merchants
+    description: "One cleaned row per merchant."
+    columns:
+      - name: merchant_id
+        data_tests: [unique, not_null]
+      - name: category_primary
+        data_tests:
+          - accepted_values:
+              values: ['Shops', 'Food and Drink', 'Travel', 'Service', 'Recreation', 'Transfer', 'Payment']

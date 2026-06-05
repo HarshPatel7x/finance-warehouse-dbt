@@ -14,8 +14,9 @@ built, the concepts, the bugs, the decisions. New to a term? Start with the glos
 |---|---|---|
 | 1 | [step-01-repo-init.md](./step-01-repo-init.md) | Repo skeleton, **Python-3.12 pin (dbt #12098)**, dbt project/profile/packages, CI + pre-push, public repo |
 | 2 | [step-02-generator-raw-load.md](./step-02-generator-raw-load.md) | Deterministic generator (40k tx / 24mo / 8 acct / 40 merchants, time-varying), `raw` load, dbt **source** + **freshness** |
+| 3 | [step-03-staging.md](./step-03-staging.md) | Staging views (`stg_transactions/accounts/merchants`) + generic tests (unique, not_null, accepted_values, **relationships/FK**); CI → `dbt build` |
 
-*(steps 3–8 added as they ship)*
+*(steps 4–8 added as they ship)*
 
 ## Key findings (worth remembering)
 *(populated as the build surfaces them — candidates: "a green test suite doesn't mean trustworthy data";
