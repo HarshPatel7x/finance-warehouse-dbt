@@ -8,7 +8,11 @@ models:
         description: "Surrogate key."
         data_tests: [unique, not_null]
       - name: account_id
-        data_tests: [unique, not_null]
+        data_tests:
+          - unique
+          - not_null
+          - dbt_expectations.expect_column_distinct_count_to_equal:
+              value: 8          # the generator creates exactly 8 accounts (deterministic)
 
   - name: dim_merchant
     description: "Merchant dimension (current). SCD2 history lives in the snapshot."
@@ -16,7 +20,11 @@ models:
       - name: merchant_key
         data_tests: [unique, not_null]
       - name: merchant_id
-        data_tests: [unique, not_null]
+        data_tests:
+          - unique
+          - not_null
+          - dbt_expectations.expect_column_distinct_count_to_equal:
+              value: 40         # exactly 40 merchants
 
   - name: dim_date
     description: "Date dimension. Grain: one row per calendar day."
@@ -25,35 +33,68 @@ models:
         description: "yyyymmdd integer surrogate."
         data_tests: [unique, not_null]
 
+  # The fact carries an ENFORCED contract: dbt checks the output columns/types match
+  # this declaration on every build and fails on drift. This is the literal
+  # "data contract between the mart layer and downstream BI."
   - name: fct_transactions
     description: "Transaction fact. Grain: one row per transaction."
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 35000      # row-count baseline (~40k)
+          max_value: 45000
     columns:
       - name: transaction_key
         description: "Surrogate key — enforces the grain."
+        data_type: varchar
+        constraints:
+          - type: not_null
         data_tests: [unique, not_null]
+      - name: transaction_id
+        data_type: varchar
       - name: account_key
+        data_type: varchar
         data_tests:
           - not_null
-          - relationships:
-              to: ref('dim_account')
-              field: account_key
+          - relationships: {to: ref('dim_account'), field: account_key}
       - name: merchant_key
+        data_type: varchar
         data_tests:
           - not_null
-          - relationships:
-              to: ref('dim_merchant')
-              field: merchant_key
+          - relationships: {to: ref('dim_merchant'), field: merchant_key}
       - name: date_key
+        data_type: integer
         data_tests:
           - not_null
-          - relationships:
-              to: ref('dim_date')
-              field: date_key
+          - relationships: {to: ref('dim_date'), field: date_key}
+      - name: transaction_date
+        data_type: date
       - name: amount
-        data_tests: [not_null]
+        data_type: double
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -4000   # contains the real range (-3197 .. 2498) with margin
+              max_value: 3000
+      - name: abs_amount
+        data_type: double
+      - name: is_inflow
+        data_type: boolean
+      - name: pending
+        data_type: boolean
 
   - name: mart_monthly_account_spend
     description: "Monthly spend rollup per account. Grain: one row per account per month."
+    # A legible YAML data contract for the BI-facing mart: schema (above/contract),
+    # freshness SLA, row-count baseline, and the named consumer (wired as an exposure
+    # in Step 7). Backs the resume's "YAML data contracts" claim.
+    meta:
+      data_contract:
+        owner: analytics-engineering
+        freshness_sla: "source raw.transactions — warn > 24h, error > 72h (_loaded_at)"
+        row_count_baseline: "fct_transactions between 35k and 45k rows"
+        consumers: ["monthly account-spend analysis (exposure: monthly_spend_report)"]
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [account_key, month]
@@ -61,8 +102,9 @@ models:
       - name: account_key
         data_tests:
           - not_null
-          - relationships:
-              to: ref('dim_account')
-              field: account_key
+          - relationships: {to: ref('dim_account'), field: account_key}
       - name: txn_count
-        data_tests: [not_null]
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1       # every account-month present has >= 1 transaction
