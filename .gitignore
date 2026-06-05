@@ -1,0 +1,18 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# dbt build artifacts (all rebuilt from source by `dbt build`)
+target/
+dbt_packages/
+logs/
+.user.yml
+
+# DuckDB warehouse file (rebuilt from the loader + seeds — never committed)
+*.duckdb
+*.duckdb.wal
+
+# macOS
+.DS_Store

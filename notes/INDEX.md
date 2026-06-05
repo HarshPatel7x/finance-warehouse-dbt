@@ -1,0 +1,21 @@
+# Notes — Index
+
+Navigation for the finance-warehouse-dbt build. Each step note is a beginner-language retro: what was
+built, the concepts, the bugs, the decisions. New to a term? Start with the glossary.
+
+## Concept reference
+- **[glossary.md](./glossary.md)** — analytics-engineering concepts in dependency order: warehouse → ELT →
+  dbt → source/seed → staging/marts (medallion) → materialization → star schema (fact/dimension) → grain →
+  surrogate key → SCD Type 2 → snapshot → generic vs singular test → dbt-expectations → model contract →
+  source freshness → exposure → lineage/DAG → CI gate.
+
+## Build-step notes (in order)
+| Step | Note | Covers |
+|---|---|---|
+| 1 | [step-01-repo-init.md](./step-01-repo-init.md) | Repo skeleton, **Python-3.12 pin (dbt #12098)**, dbt project/profile/packages, CI + pre-push, public repo |
+
+*(steps 2–8 added as they ship)*
+
+## Key findings (worth remembering)
+*(populated as the build surfaces them — candidates: "a green test suite doesn't mean trustworthy data";
+"SCD2 history is only as good as your change-detection grain")*

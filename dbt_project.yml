@@ -1,0 +1,29 @@
+name: 'finance_warehouse'
+version: '0.1.0'
+config-version: 2
+
+# This project reads its DuckDB connection from the in-repo profiles.yml.
+# Run dbt with `--profiles-dir .` so a fresh clone needs zero global config.
+profile: 'finance_warehouse'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Layered modeling: staging/intermediate are ephemeral-cheap views; marts are
+# materialized tables (the layer a BI tool / analyst actually queries).
+models:
+  finance_warehouse:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table

@@ -1,0 +1,11 @@
+# In-repo dbt profile so `git clone && dbt build --profiles-dir .` works with
+# zero global setup. DuckDB is an embedded warehouse — the whole "warehouse" is
+# the single finance_warehouse.duckdb file (gitignored; rebuilt from the loader).
+finance_warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: finance_warehouse.duckdb
+      threads: 4
+      schema: main

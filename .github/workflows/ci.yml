@@ -1,0 +1,29 @@
+name: CI
+
+# Gates every PR by building the warehouse on a clean runner with NOTHING but pip —
+# zero secrets, no Docker, no cloud account. A green check means a fresh clone of this
+# repo reproduces the whole warehouse + every data test. (The loader + `dbt build`
+# steps are added as those layers land — Step 2 onward.)
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"   # dbt does not support 3.14 yet (dbt-core #12098)
+          cache: pip
+
+      - name: Install pinned deps
+        run: pip install -r requirements.txt
+
+      - name: Install dbt packages
+        run: dbt deps --profiles-dir .
+
+      - name: dbt parse (skeleton gate — build added with the models)
+        run: dbt parse --profiles-dir .

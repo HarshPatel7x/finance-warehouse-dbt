@@ -1,0 +1,5 @@
+# dbt does NOT support Python 3.14 yet (dbt-core issue #12098 — mashumaro / pydantic.v1
+# break on 3.14). Use a Python 3.12 venv. Verified working on Python 3.12.2:
+#   python3.12 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
+dbt-duckdb==1.10.1
+dbt-core==1.11.11
