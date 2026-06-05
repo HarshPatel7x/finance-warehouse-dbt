@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: dim_account
+    description: "Account dimension. Grain: one row per account."
+    columns:
+      - name: account_key
+        description: "Surrogate key."
+        data_tests: [unique, not_null]
+      - name: account_id
+        data_tests: [unique, not_null]
+
+  - name: dim_merchant
+    description: "Merchant dimension (current). SCD2 history lives in the snapshot."
+    columns:
+      - name: merchant_key
+        data_tests: [unique, not_null]
+      - name: merchant_id
+        data_tests: [unique, not_null]
+
+  - name: dim_date
+    description: "Date dimension. Grain: one row per calendar day."
+    columns:
+      - name: date_key
+        description: "yyyymmdd integer surrogate."
+        data_tests: [unique, not_null]
+
+  - name: fct_transactions
+    description: "Transaction fact. Grain: one row per transaction."
+    columns:
+      - name: transaction_key
+        description: "Surrogate key — enforces the grain."
+        data_tests: [unique, not_null]
+      - name: account_key
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_account')
+              field: account_key
+      - name: merchant_key
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_merchant')
+              field: merchant_key
+      - name: date_key
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: amount
+        data_tests: [not_null]
+
+  - name: mart_monthly_account_spend
+    description: "Monthly spend rollup per account. Grain: one row per account per month."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [account_key, month]
+    columns:
+      - name: account_key
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_account')
+              field: account_key
+      - name: txn_count
+        data_tests: [not_null]
