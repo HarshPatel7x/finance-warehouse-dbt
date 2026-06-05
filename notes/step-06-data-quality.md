@@ -30,8 +30,9 @@ Verified: full `dbt build` → **PASS=54, ERROR=0**.
 row — a *payroll* transaction with a **positive** amount (payroll should be money *in*), valid keys,
 in-range date:
 
-- **12 of 13** tests on `fct_transactions` — `unique`, `not_null`, all `relationships` (incl. the date FK),
-  the value-range and row-count expectations — **PASSED**. The row is well-formed.
+- **12 of 13** tests on `fct_transactions` **PASSED** — all **11** generic + expectation checks (`unique`,
+  `not_null`, every `relationships` incl. the date FK, the value-range and row-count expectations) *and* the
+  other singular test (`assert_no_future_transactions`). The row is well-formed.
 - The **one** test that caught it was the **singular** `assert_inflow_categories_are_negative`
   (*"Got 1 result, configured to fail if != 0"*).
 

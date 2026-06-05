@@ -1,10 +1,9 @@
--- SCD2 invariant: every merchant has exactly ONE open (current) version in the
--- snapshot. If this returns any rows, history is corrupt (two rows both claim to be
--- "now"). A singular test — returns the offending merchant_ids.
+-- SCD2 invariant: every merchant has EXACTLY one open (current) version in the
+-- snapshot. Catches both duplicates (>1 open) AND a lost-current bug (0 open).
+-- Returns any merchant whose open-version count isn't exactly 1.
 select
     merchant_id,
-    count(*) as open_versions
+    count(*) filter (where dbt_valid_to is null) as open_versions
 from {{ ref('snap_merchant') }}
-where dbt_valid_to is null
 group by merchant_id
-having count(*) > 1
+having count(*) filter (where dbt_valid_to is null) <> 1

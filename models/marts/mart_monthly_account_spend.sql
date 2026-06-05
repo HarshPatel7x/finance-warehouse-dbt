@@ -6,7 +6,7 @@ with f as (
 
 select
     account_key,
-    date_trunc('month', transaction_date)                      as month,
+    cast(date_trunc('month', transaction_date) as date)        as month,
     count(*)                                                   as txn_count,
     sum(case when not is_inflow then abs_amount else 0 end)    as total_outflow,
     sum(case when is_inflow     then abs_amount else 0 end)    as total_inflow,
